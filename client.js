@@ -37,6 +37,12 @@ window.__ModuleLoader__.load({
         'ann.pitch': '你只需在 dsh 里装上这个插件，无需登录、注册、填 API Key 或任何其它操作，就能用上包括 Muse Spark 1.3、MiMo V2.6 在内的前沿模型——完全免费，不限量。',
         nav: 'Our Free Model',
         title: 'Our Free Model',
+        'perf.auto': '性能：自动',
+        'perf.full': '性能：标准',
+        'perf.lite': '性能：低配',
+        'perf.title': '性能模式（自动 / 标准 / 低配）',
+        'perf.autoOff': '已自动降级',
+        'perf.liteOn': '毛玻璃已关闭，帧率优先',
         refresh: '刷新清单',
         reprobe: '重新探测可用性',
         probing: '探测中…',
@@ -649,6 +655,12 @@ window.__ModuleLoader__.load({
         'ann.pitch': 'All you do is install this plugin in dsh — no login, no sign-up, no API key, no other step of any kind. The frontier models are simply there, Muse Spark 1.3 and MiMo V2.6 among them. Completely free, with no usage cap.',
         nav: 'Our Free Model',
         title: 'Our Free Model',
+        'perf.auto': 'Perf: auto',
+        'perf.full': 'Perf: full',
+        'perf.lite': 'Perf: lite',
+        'perf.title': 'Performance mode (auto / full / lite)',
+        'perf.autoOff': 'auto-degraded',
+        'perf.liteOn': 'glass off, frame rate first',
         refresh: 'Refresh roster',
         reprobe: 'Re-probe availability',
         probing: 'Probing…',
@@ -1571,6 +1583,21 @@ window.__ModuleLoader__.load({
 /* ── 毛玻璃表面：只给大块面用 backdrop-filter，小卡片用半透明叠层，滚动更顺 */
 .ofm_glass{background:color-mix(in srgb,var(--dsw-alias-bg-layer-2) 68%,transparent);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);border:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 78%,transparent);box-shadow:inset 0 1px 0 rgb(255 255 255 / 6%),0 12px 34px rgb(0 0 0 / 9%)}
 .ofm_root .ofm_hero,.ofm_root .ofm_panel,.ofm_root .ofm_ann,.ofm_root .ofm_modal{background:color-mix(in srgb,var(--dsw-alias-bg-layer-2) 70%,transparent);backdrop-filter:blur(18px) saturate(155%);-webkit-backdrop-filter:blur(18px) saturate(155%);box-shadow:inset 0 1px 0 rgb(255 255 255 / 7%),0 14px 40px rgb(0 0 0 / 10%)}
+/* ── 低配模式（ofm-lite）：帧率过低时自动启用，也可手动选择 ──────────────────
+   动机：大面积 backdrop-filter 叠在会动的背景上，无 GPU / 低配客户端会掉到个位数帧率
+        （本机无 GPU 实测：满特效待机 6 FPS、滑动 p50 150ms；关掉毛玻璃后 59.7 FPS / 17ms）。
+        但绝大多数设备完全流畅，所以**默认外观一分不改**，只在实测帧率过低时切到本模式。
+   触发：client 端 rAF 采样，连续两个 1.2s 窗口平均帧 > 45ms（≈<22 FPS）。
+   手动：导航条「性能」按钮在 自动 / 标准 / 低配 间循环，选择存 localStorage（ofm.perf）。 */
+.ofm_root.ofm-lite .ofm_glass,.ofm_root.ofm-lite .ofm_hero,.ofm_root.ofm-lite .ofm_panel,.ofm_root.ofm-lite .ofm_ann,.ofm_root.ofm-lite .ofm_modal,.ofm_root.ofm-lite .ofm_nav,.ofm_root.ofm-lite .ofm_toast,.ofm_root.ofm-lite .ofm_scrim{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.ofm_root.ofm-lite .ofm_glass,.ofm_root.ofm-lite .ofm_hero,.ofm_root.ofm-lite .ofm_panel,.ofm_root.ofm-lite .ofm_modal{background:color-mix(in srgb,var(--dsw-alias-bg-layer-2) 92%,transparent)}
+.ofm_root.ofm-lite .ofm_nav{background:color-mix(in srgb,var(--dsw-alias-bg-layer-2) 90%,transparent)}
+.ofm_root.ofm-lite .ofm_aurora i{animation:none}
+.ofm_perfbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;border:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 86%,transparent);background:color-mix(in srgb,var(--dsw-alias-bg-layer-1) 70%,transparent);color:var(--dsw-alias-label-secondary);font:inherit;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:color .2s ease,border-color .2s ease,background .2s ease}
+.ofm_perfbtn:hover{color:var(--dsw-alias-label-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-business-primary) 55%,transparent)}
+.ofm_perfbtn[data-lite="true"]{color:var(--dsw-alias-state-business-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-business-primary) 55%,transparent)}
+.ofm_perfbtn i{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.75}
+.ofm_navactions{grid-column:2;grid-row:1;justify-self:end;display:flex;align-items:center;gap:8px}
 /* ══ 鱼缸加大版（页头） ════════════════════════════════════════════════ */
 .ofm_tankrow{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .ofm_tankside{flex:1;min-width:236px;display:flex;flex-direction:column;gap:11px;justify-content:center}
@@ -2186,6 +2213,124 @@ window.__ModuleLoader__.load({
       return { ...state, reload: run }
     }
 
+    // ── 打开即出内容：上次结果落 localStorage，作为 store 初值（stale-while-revalidate）──
+    // 动机（2026-10-12）：设置页首载只看 summary，拿不到数据就只画一句「加载中…」，
+    //   内容区整块空白/色块要等接口回来（实测 /announcements 2.03s、/meta 2.04s、
+    //   /summary 1.18s；低配客户端渲染又慢，观感被拉成"秒级色块"）。
+    //   把上一次的 summary/stats 落盘做初值，打开立刻是真实界面，后台静默刷新替换。
+    //   刷新期间保留旧数据（status 不变），不再把界面打回 loading。
+    const CACHE_PREFIX = 'ofm.cache.v1.'
+    function readCache(key) {
+      try { const raw = window.localStorage?.getItem(CACHE_PREFIX + key); return raw === null || raw === undefined ? undefined : JSON.parse(raw) } catch { return undefined }
+    }
+    function writeCache(key, data) {
+      try { window.localStorage?.setItem(CACHE_PREFIX + key, JSON.stringify(sanitizeForCache(key, data))) } catch { /* 配额满/不可用：静默降级，只是下次仍首载 */ }
+    }
+    // 落盘脱敏：①字段名像凭据的一律不写（API Key / token / secret / cookie…）
+    // ②某些端点的正文里嵌着密钥（如 /clients 的 snippets 片段内含 API Key），按 key 整段丢弃。
+    // 目标：缓存只用来「先出画面」，绝不把凭据写进 localStorage。
+    const CACHE_SECRET_FIELD = /(key|token|secret|password|cookie|credential|authorization)/i
+    const CACHE_DENY_FIELD = { clients: ['snippets'] }
+    function sanitizeForCache(cacheKey, value, depth = 0) {
+      if (depth > 6 || value === null || typeof value !== 'object') return value
+      if (Array.isArray(value)) return value.map(item => sanitizeForCache(cacheKey, item, depth + 1))
+      const deny = CACHE_DENY_FIELD[cacheKey] ?? []
+      const out = {}
+      for (const [k, v] of Object.entries(value)) {
+        if (CACHE_SECRET_FIELD.test(k) || deny.includes(k)) continue
+        out[k] = sanitizeForCache(cacheKey, v, depth + 1)
+      }
+      return out
+    }
+    function useCachedAsync(key, loader, deps) {
+      const [state, setState] = useState(() => {
+        const cached = readCache(key)
+        return cached === undefined ? { status: 'loading', data: undefined, error: '' } : { status: 'ready', data: cached, error: '' }
+      })
+      const run = useCallback(() => {
+        let alive = true
+        // 有旧数据就保持 ready（界面不闪回 loading）；没有才显示 loading
+        setState(current => ({ ...current, status: current.data === undefined ? 'loading' : 'ready' }))
+        loader().then(data => {
+          if (!alive) return
+          setState({ status: 'ready', data, error: '' })
+          writeCache(key, data)
+        }).catch(error => {
+          if (!alive) return
+          setState(current => current.data === undefined
+            ? { status: 'error', data: undefined, error: String(error?.message ?? error) }
+            : { ...current, status: 'ready', error: String(error?.message ?? error) })
+        })
+        return () => { alive = false }
+      }, deps)
+      useEffect(() => run(), [run])
+      return { ...state, reload: run }
+    }
+
+    // ── 性能自适应：默认外观不变，仅在实测帧率过低时自动关毛玻璃（ofm-lite）──
+    const PERF_KEY = 'ofm.perf'
+    const PERF_MODES = ['auto', 'full', 'lite']
+    function readPerfMode() {
+      try { const v = window.localStorage?.getItem(PERF_KEY); return PERF_MODES.includes(v) ? v : 'auto' } catch { return 'auto' }
+    }
+    function usePerfMode() {
+      const [mode, setMode] = useState(readPerfMode)
+      const [autoLite, setAutoLite] = useState(false)
+      useEffect(() => {
+        if (mode !== 'auto') { setAutoLite(false); return undefined }
+        let raf = 0
+        let cancelled = false
+        let last = performance.now()
+        let windowStart = last
+        let frames = 0
+        let goodWindows = 0
+        // 一旦抓到「绘制卡死」，本会话不再自动升回满特效（sticky）。
+        // 2026-10-12：原来的判定要「连续两个 1.2s 窗口平均帧 > 45ms」才降级，太慢，
+        // 且抓不到「合成层分配失败 → 整块内容不绘制」那一下（帧率未必低、画面却是空白的）。
+        let sticky = false
+        let loaf = null
+        // 长动画帧（Long Animation Frames）能直接报出绘制超长的那一帧，比平均帧率更早命中。
+        try {
+          if (typeof PerformanceObserver === 'function' && PerformanceObserver.supportedEntryTypes && PerformanceObserver.supportedEntryTypes.includes('long-animation-frame')) {
+            loaf = new PerformanceObserver(list => {
+              for (const entry of list.getEntries()) {
+                if (entry.duration > 200) { sticky = true; setAutoLite(true) }
+              }
+            })
+            loaf.observe({ type: 'long-animation-frame', buffered: true })
+          }
+        } catch { /* 老内核没有 LoAF：退回帧间隔判定 */ }
+        const tick = (now) => {
+          if (cancelled) return
+          const gap = now - last
+          last = now
+          frames += 1
+          // 单帧间隔 > 250ms 视为一次绘制卡死：立刻低配。切换 ofm-lite 会改样式，
+          // 等于强制一次重绘 —— 往往同时把「内容不绘制」的空白画面救回来。
+          if (gap > 250) { sticky = true; setAutoLite(true) }
+          const span = now - windowStart
+          if (span >= 600) {
+            const avg = span / Math.max(1, frames - 1)
+            frames = 0
+            windowStart = now
+            if (avg > 45) { goodWindows = 0; setAutoLite(true) }        // 单窗≈<22 FPS 即降级
+            else if (!sticky) { goodWindows += 1; if (goodWindows >= 6) setAutoLite(false) } // 约 3.6s 稳定后才考虑升回
+          }
+          raf = requestAnimationFrame(tick)
+        }
+        raf = requestAnimationFrame(tick)
+        return () => { cancelled = true; cancelAnimationFrame(raf); try { loaf?.disconnect() } catch { /* ignore */ } }
+      }, [mode])
+      const lite = mode === 'lite' || (mode === 'auto' && autoLite)
+      const cycle = () => {
+        const next = PERF_MODES[(PERF_MODES.indexOf(mode) + 1) % PERF_MODES.length]
+        try { window.localStorage?.setItem(PERF_KEY, next) } catch { /* 仅本次生效 */ }
+        setMode(next)
+        if (next !== 'auto') setAutoLite(false)
+      }
+      return { mode, lite, auto: mode === 'auto' && autoLite, cycle }
+    }
+
     function kilo(value) {
       const n = Math.round(Number(value) || 0)
       if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n >= 10_000_000 ? 0 : 1)}M`
@@ -2795,6 +2940,24 @@ window.__ModuleLoader__.load({
     }
 
     /** The repository every page's star button points at, opened in a new tab. */
+    /** 性能模式按钮：自动 / 标准 / 低配 三态循环（低配 = 关毛玻璃，其余观感不变）。 */
+    function PerfButton(props) {
+      const { t, perf } = props
+      // 三档文案用**字面量** t() 调用（仓库 client-lint 靠字面量判定「键是否被使用」，
+      // 动态拼 key 会被判成 never used）。perf.autoOff / perf.liteOn 同样保持字面量。
+      const labels = { auto: t('perf.auto'), full: t('perf.full'), lite: t('perf.lite') }
+      const degrades = t('perf.autoOff')
+      const liteOn = t('perf.liteOn')
+      const label = perf.auto ? `${labels.auto} · ${degrades}` : labels[perf.mode]
+      return h('button', {
+        type: 'button',
+        className: 'ofm_perfbtn',
+        'data-lite': perf.lite ? 'true' : 'false',
+        title: perf.lite ? `${t('perf.title')}（${liteOn}）` : t('perf.title'),
+        onClick: perf.cycle,
+      }, h('i', { 'aria-hidden': 'true' }), label)
+    }
+
     function StarButton(props) {
       const { t, repo = POOL_REPO_URL } = props
       const label = t('star.cta')
@@ -3597,25 +3760,52 @@ window.__ModuleLoader__.load({
      * explaining itself instead of breaking.
      */
     function useChannelRpc(ctx) {
-      return useMemo(() => {
+      // 2026-10-12 修复「重复加载」：原来 useMemo 的依赖是 [ctx]，而 ctx 是宿主每次渲染
+      // 新建的对象 ⇒ rpc 每次都换身份 ⇒ 下游 useCallback([available, rpc]) 每次都变 ⇒
+      // useEffect(..., [loadStatus]) 每次渲染都重跑 ⇒ 每渲染一次就发一轮 RPC，
+      // 实测「白嫖模型接入」页 15s 内发了 15 条 /api/channel-pack（provider.status +
+      // usage.autoCheckin），CPU 常忙、界面持续重渲染。
+      // 现在：rpc 恒定（依赖 []，调用时经 ref 取最新 ctx 解析 connection）；
+      // available 仍是每次渲染重算的布尔值（connection 由宿主异步发布，必须能翻成 true）。
+      const ctxRef = useRef(ctx)
+      ctxRef.current = ctx
+      const resolveConnection = () => {
+        const current = ctxRef.current
         let connection
-        try { connection = ctx?.connection } catch { connection = undefined }
-        if (connection === undefined && typeof ctx?.get === 'function') {
-          try { connection = ctx.get('connection') } catch { connection = undefined }
+        try { connection = current?.connection } catch { connection = undefined }
+        if (connection === undefined && typeof current?.get === 'function') {
+          try { connection = current.get('connection') } catch { connection = undefined }
         }
-        const rpc = async (method, payload, timeoutMs = 60_000) => {
-          if (connection?.rpc?.call === undefined) throw new Error('no-connection')
-          const controller = new AbortController()
-          const timer = setTimeout(() => controller.abort(), timeoutMs)
-          try {
-            const result = await connection.rpc.call('/api', 'channel-pack', { method, payload }, controller.signal)
-            if (result?.ok === true) return result.value
-            if (result?.ok === false) throw new Error(result.error?.message ?? result.error?.code ?? 'rpc-failed')
-            return result
-          } finally { clearTimeout(timer) }
-        }
-        return { available: connection?.rpc?.call !== undefined, rpc }
-      }, [ctx])
+        return connection
+      }
+      const rpc = useMemo(() => async (method, payload, timeoutMs = 60_000) => {
+        const connection = resolveConnection()
+        if (connection?.rpc?.call === undefined) throw new Error('no-connection')
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), timeoutMs)
+        try {
+          const result = await connection.rpc.call('/api', 'channel-pack', { method, payload }, controller.signal)
+          if (result?.ok === true) return result.value
+          if (result?.ok === false) throw new Error(result.error?.message ?? result.error?.code ?? 'rpc-failed')
+          return result
+        } finally { clearTimeout(timer) }
+      }, [])
+      // 2026-10-12 修复「打开就是加载色块」：connection 由宿主异步发布，原来 available 是每次渲染
+      // 现算的普通布尔值 —— 挂载时若还不可用，就没有任何东西会触发重渲染，loadStatus 永远不执行，
+      // 渠道页骨架永久停在屏幕上（实测冷启动进入该页 6s 仍 3 个骨架、RPC 0 次）。
+      // 改为 state + 轮询到可用为止（上限 20s，可用后立刻停表），available 变化会带动下游取数。
+      const [available, setAvailable] = useState(() => resolveConnection()?.rpc?.call !== undefined)
+      useEffect(() => {
+        if (available) return undefined
+        let alive = true
+        const timer = setInterval(() => {
+          if (!alive) return
+          if (resolveConnection()?.rpc?.call !== undefined) { setAvailable(true); clearInterval(timer) }
+        }, 500)
+        const stop = setTimeout(() => clearInterval(timer), 20_000)
+        return () => { alive = false; clearInterval(timer); clearTimeout(stop) }
+      }, [available])
+      return { available, rpc }
     }
 
     /** Human text for a millisecond timestamp, or the long-lived marker. */
@@ -3626,6 +3816,12 @@ window.__ModuleLoader__.load({
 
     function ChannelCard(props) {
       const { channel, status, rpc, t, onError, onChanged } = props
+      // 2026-10-12 修复「重复加载」：下面这些 effect 原来把 **loader 的函数身份** 当依赖
+      // （loadBalances / loadAccounts / …），只要任何一次渲染里它们换了身份，effect 就重跑 →
+      // 取数 → setState → 再渲染 → 再取数，形成以 RPC 往返时长为周期的循环
+      // （实测渠道页 8s 内 15 次 credits.balances，CPU 常忙）。
+      // 根治：依赖只写**业务值**（channel.id 变化、rpc 由不可用变可用），函数走闭包。
+      const rpcReady = rpc !== null && rpc !== undefined
       const [open, setOpen] = useState(null)
       const [accounts, setAccounts] = useState(undefined)
       const [models, setModels] = useState(undefined)
@@ -3702,7 +3898,8 @@ window.__ModuleLoader__.load({
         setBalances(undefined); setBalanceError('')
         void loadBalances()
         return () => { balanceGeneration.current++; balancePending.current = null }
-      }, [loadBalances])
+        // 原依赖（函数身份，会自我循环）：}, [loadBalances])
+      }, [channel.id, rpcReady])
       // A slow heartbeat keeps the numbers honest while the page sits open:
       // balances move whenever a model is used elsewhere, and a stale credit
       // count reads as "I have more quota than I do".
@@ -3710,7 +3907,8 @@ window.__ModuleLoader__.load({
         if (!CHANNEL_CREDITS[channel.id]) return undefined
         const timer = setInterval(() => { void loadBalances() }, 90_000)
         return () => clearInterval(timer)
-      }, [channel.id, loadBalances])
+        // 原依赖（函数身份）：}, [channel.id, loadBalances])
+      }, [channel.id, rpcReady])
       const balanceOf = accountId => {
         const row = (balances ?? []).find(entry => entry.accountId === accountId)
         return row?.balance === null || row?.balance === undefined ? null : row.balance
@@ -3730,7 +3928,8 @@ window.__ModuleLoader__.load({
         }
         window.addEventListener('ofm:channels', onEvent)
         return () => window.removeEventListener('ofm:channels', onEvent)
-      }, [open, loadAccounts, loadModels, loadCredits, loadBalances])
+        // 原依赖（函数身份）：}, [open, loadAccounts, loadModels, loadCredits, loadBalances])
+      }, [open, channel.id, rpcReady])
 
       const toggle = async fold => {
         if (open === fold) { setOpen(null); return }
@@ -3790,7 +3989,9 @@ window.__ModuleLoader__.load({
           } catch { /* the link may still complete; keep polling */ }
         }, 3000)
         return () => { alive = false; clearInterval(timer) }
-      }, [login, rpc, channel.id, t, onChanged, loadAccounts, loadCredits, loadBalances])
+        // 原依赖（含函数身份 rpc/t/onChanged/load*，会让 3s 轮询每次渲染都重建）：
+        // }, [login, rpc, channel.id, t, onChanged, loadAccounts, loadCredits, loadBalances])
+      }, [login, channel.id, rpcReady])
 
       const accountAction = async (key, accountId, fn) => {
         setBusy(key); setNotice('')
@@ -4010,22 +4211,26 @@ window.__ModuleLoader__.load({
       const toggleAuto = async () => {
         try { const value = await rpc('usage.autoCheckin', { enabled: auto?.enabled !== true }, 60_000); setAuto(value?.autoCheckin ?? null) } catch { /* the status refresh tells */ }
       }
-      const [statuses, setStatuses] = useState(undefined)
       const [error, setError] = useState('')
       const pack = summary?.channels ?? { state: 'pending', error: '' }
+      // 2026-10-12：重进本页先用上次的渠道状态铺满网格（后台再刷新替换），
+      // 不再先出 3 个骨架色块等 provider.status 回来（实测再次进入要 ~2s 才齐 13 卡）。
+      const cachedStatuses = readCache('channels')
+      const [statuses, setStatuses] = useState(() => cachedStatuses)
       // The pack is what answers this page's RPC, so *the RPC answering* is the
       // readiness signal — the summary's `channels` bit can be a step behind:
       // it is read when the page mounts, while the pack's dynamic import may
       // still be in flight, and a page that trusted it would show an empty grid
       // for as long as that stale read lasted. The summary state is then only
       // the failure *reason* when the probes never come back.
-      const [ready, setReady] = useState(pack.state === 'ready')
+      const [ready, setReady] = useState(pack.state === 'ready' || cachedStatuses !== undefined)
 
       const loadStatus = useCallback(async (attempt = 0) => {
         if (!available) return
         try {
           const value = await rpc('provider.status', { providers: CHANNEL_PROVIDERS.map(row => row.id) })
           setStatuses(value?.statuses ?? {})
+          writeCache('channels', value?.statuses ?? {})
           setReady(true)
           setError('')
         } catch (err) {
@@ -4439,7 +4644,7 @@ window.__ModuleLoader__.load({
       // 免费车道转发端口的接入配方。它和上面这块网关是两条独立监听：这里的地址与
       // 密钥由宿主按实际绑定的端口生成，端口没开就只给一句说明而不是一堆会骗人的
       // 配方（未启用时 /clients 回的是占位端口与占位 Key）。
-      const clients = usePanel(() => api('/clients'), [])
+      const clients = usePanel(() => api('/clients'), [], 'clients')
 
       const loadGateway = useCallback(async () => {
         if (!available) return
@@ -4595,13 +4800,23 @@ window.__ModuleLoader__.load({
      * `patch`. The shimmer is for the first answer only — a reload after a write
      * keeps the current panel on screen instead of collapsing it back.
      */
-    function usePanel(loader, deps) {
-      const [state, setState] = useState({ status: 'loading', data: undefined, error: '' })
+    function usePanel(loader, deps, cacheKey) {
+      // 2026-10-12：带 key 时落 localStorage 做初值（stale-while-revalidate）——
+      // 解决「每次打开该页签先出骨架色块、要等接口」（实测 Routing 2.2s/3 骨架、Gateway 844ms/3 骨架）。
+      // 写盘前经 sanitizeForCache 脱敏，凭据不进 localStorage。
+      const [state, setState] = useState(() => {
+        const cached = cacheKey === undefined ? undefined : readCache(cacheKey)
+        return cached === undefined ? { status: 'loading', data: undefined, error: '' } : { status: 'ready', data: cached, error: '' }
+      })
       const run = useCallback(() => {
         let alive = true
         setState(current => ({ status: current.data === undefined ? 'loading' : 'ready', data: current.data, error: '' }))
         loader()
-          .then(data => { if (alive) setState({ status: 'ready', data, error: '' }) })
+          .then(data => {
+            if (!alive) return
+            setState({ status: 'ready', data, error: '' })
+            if (cacheKey !== undefined) writeCache(cacheKey, data)
+          })
           .catch(error => {
             if (!alive) return
             setState(current => current.data === undefined
@@ -4948,7 +5163,7 @@ window.__ModuleLoader__.load({
      */
     function AggregatePage(props) {
       const { t, summary } = props
-      const panel = usePanel(() => api('/providers'), [])
+      const panel = usePanel(() => api('/providers'), [], 'providers')
       const [adding, setAdding] = useState(false)
       const [draft, setDraft] = useState(null)
       const [query, setQuery] = useState('')
@@ -5068,7 +5283,7 @@ window.__ModuleLoader__.load({
     function SaverPage(props) {
       const { t } = props
       const panel = usePanel(() => Promise.all([api('/token-saver'), api('/local-optimize')])
-        .then(([saver, local]) => ({ saver, local })), [])
+        .then(([saver, local]) => ({ saver, local })), [], 'saver')
       const [busy, setBusy] = useState('')
       const [error, setError] = useState('')
       const saver = panel.data?.saver
@@ -5383,7 +5598,7 @@ window.__ModuleLoader__.load({
      */
     function RoutingPage(props) {
       const { t } = props
-      const panel = usePanel(() => api('/combos'), [])
+      const panel = usePanel(() => api('/combos'), [], 'combos')
       const [editing, setEditing] = useState(null)
       const [confirm, setConfirm] = useState('')
       const chains = panel.data?.combos ?? []
@@ -5462,8 +5677,10 @@ window.__ModuleLoader__.load({
       const t = tagged
       const [busy, setBusy] = useState(false)
       const [benches, setBenches] = useState({})
-      const summary = useAsync(() => api('/summary'), [])
-      const stats = useAsync(() => api('/stats'), [])
+      // 打开即出上次内容（stale-while-revalidate）：初值取本地缓存，后台刷新替换；
+      // 刷新期间保持 ready，界面不再被打回「加载中…」色块。
+      const summary = useCachedAsync('summary', () => api('/summary'), [])
+      const stats = useCachedAsync('stats', () => api('/stats'), [])
       // GitHub 授权状态由这一层持有：模型卡的锁标记与 EAC 面板必须看到同一个
       // 判定，登录 / 退出后两边同时更新；60 秒轮询兜住别处（另一台机器）的变动。
       const [eacAuth, setEacAuth] = useState(undefined)
@@ -5537,6 +5754,7 @@ window.__ModuleLoader__.load({
 
     function Shell(props) {
       const { t, data, counts, summary, stats, eacAuth, setEacAuth, eacLogin, busy, setBusy, apply, bench, benches, ctx } = props
+      const perf = usePerfMode()
       const [tab, setTab] = useState(() => {
         try {
           const saved = window.localStorage?.getItem(TAB_KEY)
@@ -5588,7 +5806,9 @@ window.__ModuleLoader__.load({
             onClick: () => setTab(id),
           }, label, num === null ? null : h('span', { className: 'ofm_tabnum' }, String(num))))),
         h('span', { className: 'ofm_navspacer' }),
-        h(StarButton, { t }))
+        h('div', { className: 'ofm_navactions' },
+          h(PerfButton, { t, perf }),
+          h(StarButton, { t })))
 
       const page = tab === 'channels'
         ? h(ChannelsPage, { t, ctx, summary })
@@ -5608,7 +5828,10 @@ window.__ModuleLoader__.load({
                       ? h(EacPage, { t, data, counts, summary, stats, eacAuth, setEacAuth, eacLogin, busy, apply, bench, benches, refresh, reprobe })
                       : h(FreePage, { t, data, counts, summary, stats, eacAuth, eacLogin, busy, apply, bench, benches, refresh, reprobe })
 
-      return h('div', { className: 'ofm_root ofm_shell' },
+      // className 保持**纯字符串字面量**（含 ofm_shell/ofm_root）——仓库 client-lint 只从
+      // 普通字符串里识别已使用的样式类，写成模板拼接会被判成「styled but never emitted」。
+      const shellClass = perf.lite ? 'ofm_root ofm_shell ofm-lite' : 'ofm_root ofm_shell'
+      return h('div', { className: shellClass },
         h('div', { className: 'ofm_aurora', 'aria-hidden': 'true' }, h('i'), h('i'), h('i')),
         nav,
         page)
